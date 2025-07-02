@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Игра 2028</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #faf8ef;
+            font-family: Arial, sans-serif;
+        }
+        #game-iframe {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            z-index: 9999;
+        }
+        .back-button {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background: #8f7a66;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            z-index: 10000;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- iframe с игрой (заменяйте ссылку на свою) -->
+    <iframe id="game-iframe" src="https://gabrielecirulli.github.io/2048/" allowfullscreen></iframe>
+
+    <!-- Кнопка "Назад" (если нужно) -->
+    <button class="back-button" onclick="window.Telegram.WebApp.close()">Назад</button>
+
+    <!-- Скрипт для блокировки свайпа вниз -->
+    <script>
+        // Блокировка свайпа вниз (чтобы нельзя было закрыть игру)
+        document.addEventListener('touchmove', function(e) {
+            if (e.scale !== 1) e.preventDefault();
+        }, { passive: false });
+
+        // Если игра встроена в Telegram WebApp
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.expand(); // Раскрыть на весь экран
+            Telegram.WebApp.enableClosingConfirmation(); // Запретить закрытие
+        }
+    </script>
+</body>
+</html>
