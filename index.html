@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Игра 2048</title>
+    <title>2048 в Telegram</title>
     <style>
         body, html {
             margin: 0;
@@ -14,58 +14,88 @@
             -webkit-touch-callout: none;
             -webkit-user-select: none;
             user-select: none;
-            overscroll-behavior: none;
-            touch-action: none;
-            background-color: #faf8ef;
+            background: #faf8ef;
         }
-        #game-wrapper {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-        #game-header {
+        #header {
+            padding: 10px;
             display: flex;
             justify-content: space-between;
-            padding: 10px;
             background: #faf8ef;
-            z-index: 1000;
         }
-        .nav-button {
+        .btn {
             background: #8f7a66;
             color: white;
             border: none;
-            padding: 8px 15px;
+            padding: 10px 15px;
             border-radius: 5px;
-            font-size: 14px;
+            font-size: 16px;
             cursor: pointer;
         }
-        #game-frame {
-            flex: 1;
-            width: 100%;
+        #game-container {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 0;
             border: none;
-            overflow: hidden;
-            background-color: #faf8ef;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .telegram-hidden {
+            display: none !important;
         }
     </style>
 </head>
 <body>
-    <div id="game-wrapper">
-        <div id="game-header">
-            <button class="nav-button" id="back-button">Назад</button>
-            <button class="nav-button" id="close-button">Закрыть</button>
-        </div>
-        <iframe id="game-frame" src="https://gabrielecirulli.github.io/2048/" allowfullscreen sandbox="allow-same-origin allow-scripts allow-popups allow-forms"></iframe>
+    <div id="header">
+        <button class="btn" id="backBtn">Назад</button>
+        <button class="btn" id="closeBtn">Закрыть</button>
+    </div>
+    <div id="game-container">
+        <iframe src="https://gabrielecirulli.github.io/2048/" allowfullscreen></iframe>
     </div>
 
     <script>
         // Проверяем, открыто ли в Telegram WebApp
-        const isTelegramWebApp = typeof Telegram !== 'undefined' && Telegram.WebApp;
+        const isTelegram = window.Telegram && Telegram.WebApp;
         
-        // Блокировка свайпа вниз
+        // Настройки для Telegram
+        if (isTelegram) {
+            Telegram.WebApp.expand();
+            Telegram.WebApp.enableClosingConfirmation();
+            Telegram.WebApp.MainButton.hide();
+            
+            // Скрываем наши кнопки, используем Telegram кнопки
+            document.getElementById('header').classList.add('telegram-hidden');
+            
+            // Показываем кнопку назад в Telegram
+            Telegram.WebApp.BackButton.show();
+            Telegram.WebApp.BackButton.onClick(() => {
+                Telegram.WebApp.close();
+            });
+        }
+
+        // Обработчики кнопок
+        document.getElementById('backBtn').addEventListener('click', () => {
+            if (isTelegram) {
+                Telegram.WebApp.close();
+            } else {
+                window.history.back();
+            }
+        });
+
+        document.getElementById('closeBtn').addEventListener('click', () => {
+            if (isTelegram) {
+                Telegram.WebApp.close();
+            } else {
+                window.close();
+            }
+        });
+
+        // Блокируем свайп вниз для обновления страницы
         let startY;
         document.addEventListener('touchstart', (e) => {
             startY = e.touches[0].clientY;
@@ -73,55 +103,10 @@
 
         document.addEventListener('touchmove', (e) => {
             const y = e.touches[0].clientY;
-            if (y - startY > 50 && startY < 100) {
+            if (y - startY > 50 && startY < 50) {
                 e.preventDefault();
             }
         }, { passive: false });
-
-        // Обработка кнопок
-        document.getElementById('back-button').addEventListener('click', () => {
-            if (isTelegramWebApp) {
-                Telegram.WebApp.close();
-            } else {
-                window.history.back();
-            }
-        });
-
-        document.getElementById('close-button').addEventListener('click', () => {
-            if (isTelegramWebApp) {
-                Telegram.WebApp.close();
-            } else {
-                window.close();
-            }
-        });
-
-        // Интеграция с Telegram WebApp
-        if (isTelegramWebApp) {
-            Telegram.WebApp.expand();
-            Telegram.WebApp.enableClosingConfirmation();
-            Telegram.WebApp.MainButton.hide();
-            Telegram.WebApp.BackButton.show();
-            Telegram.WebApp.BackButton.onClick(() => {
-                Telegram.WebApp.close();
-            });
-            Telegram.WebApp.setHeaderColor('#faf8ef');
-            Telegram.WebApp.setBackgroundColor('#faf8ef');
-            
-            // Скрываем стандартные кнопки, если в Telegram
-            document.getElementById('game-header').style.display = 'none';
-        }
-
-        // Фокус на iframe для работы клавиатуры
-        window.addEventListener('load', () => {
-            const frame = document.getElementById('game-frame');
-            frame.addEventListener('load', () => {
-                try {
-                    frame.contentWindow.focus();
-                } catch (e) {
-                    console.log('Cannot focus iframe due to cross-origin policy');
-                }
-            });
-        });
     </script>
 </body>
 </html>
