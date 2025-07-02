@@ -14,7 +14,9 @@
             height: 100%;
             overflow: hidden;
             background: #faf8ef;
-            font-family: Arial, sans-serif;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
         #game-iframe {
             position: fixed;
@@ -25,40 +27,39 @@
             border: none;
             z-index: 9999;
         }
-        .back-button {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 10px 20px;
-            background: #8f7a66;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            z-index: 10000;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body>
-    <!-- iframe с игрой (заменяйте ссылку на свою) -->
-    <iframe id="game-iframe" src="https://gabrielecirulli.github.io/2048/" allowfullscreen></iframe>
+    <iframe id="game-iframe" src="https://gabrielecirulli.github.io/2048/"></iframe>
 
-    <!-- Кнопка "Назад" (если нужно) -->
-    <button class="back-button" onclick="window.Telegram.WebApp.close()">Назад</button>
-
-    <!-- Скрипт для блокировки свайпа вниз -->
     <script>
-        // Блокировка свайпа вниз (чтобы нельзя было закрыть игру)
-        document.addEventListener('touchmove', function(e) {
-            if (e.scale !== 1) e.preventDefault();
+        // Убираем шапку Telegram и раскрываем на весь экран
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.expand();
+            Telegram.WebApp.enableClosingConfirmation();
+            Telegram.WebApp.MainButton.hide();
+            Telegram.WebApp.HeaderColor.setBackgroundColor('#faf8ef');
+            Telegram.WebApp.HeaderColor.setForegroundColor('#000000');
+        }
+
+        // Блокировка свайпа вниз
+        let startY;
+        document.addEventListener('touchstart', (e) => {
+            startY = e.touches[0].clientY;
         }, { passive: false });
 
-        // Если игра встроена в Telegram WebApp
-        if (window.Telegram && window.Telegram.WebApp) {
-            Telegram.WebApp.expand(); // Раскрыть на весь экран
-            Telegram.WebApp.enableClosingConfirmation(); // Запретить закрытие
-        }
+        document.addEventListener('touchmove', (e) => {
+            const y = e.touches[0].clientY;
+            // Блокируем только свайп вниз от верхнего края
+            if (y - startY > 50 && startY < 50) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        // Дополнительная защита от закрытия
+        document.addEventListener('gesturestart', (e) => {
+            e.preventDefault();
+        });
     </script>
 </body>
 </html>
