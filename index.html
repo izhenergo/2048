@@ -125,6 +125,12 @@
             font-size: 18px;
             border-radius: 5px;
             cursor: pointer;
+            z-index: 101;
+            position: relative;
+        }
+
+        .hidden {
+            display: none !important;
         }
 
         @media (max-width: 500px) {
@@ -140,6 +146,9 @@
             }
             .tile-1024, .tile-2048 {
                 font-size: 16px;
+            }
+            .game-over-text {
+                font-size: 40px;
             }
         }
     </style>
@@ -163,7 +172,6 @@
     </div>
 
     <script>
-        // Инициализация игры
         document.addEventListener('DOMContentLoaded', () => {
             const grid = document.getElementById('grid');
             const scoreElement = document.getElementById('score');
@@ -174,7 +182,6 @@
             let score = 0;
             let gameOver = false;
             
-            // Инициализация поля
             function initGame() {
                 board = Array(4).fill().map(() => Array(4).fill(0));
                 score = 0;
@@ -186,7 +193,6 @@
                 addRandomTile();
             }
             
-            // Отрисовка поля
             function renderBoard() {
                 grid.innerHTML = '';
                 for (let i = 0; i < 4; i++) {
@@ -202,7 +208,6 @@
                 }
             }
             
-            // Добавление случайной плитки (2 или 4)
             function addRandomTile() {
                 const emptyCells = [];
                 for (let i = 0; i < 4; i++) {
@@ -219,7 +224,6 @@
                 }
             }
             
-            // Проверка возможности хода
             function canMove() {
                 for (let i = 0; i < 4; i++) {
                     for (let j = 0; j < 4; j++) {
@@ -231,14 +235,12 @@
                 return false;
             }
             
-            // Движение плиток
             function moveTiles(direction) {
                 if (gameOver) return false;
                 
                 let moved = false;
                 const oldBoard = JSON.parse(JSON.stringify(board));
                 
-                // Влево
                 if (direction === 'left') {
                     for (let i = 0; i < 4; i++) {
                         let row = board[i].filter(val => val !== 0);
@@ -255,7 +257,6 @@
                     }
                 }
                 
-                // Вправо
                 if (direction === 'right') {
                     for (let i = 0; i < 4; i++) {
                         let row = board[i].filter(val => val !== 0);
@@ -272,7 +273,6 @@
                     }
                 }
                 
-                // Вверх
                 if (direction === 'up') {
                     for (let j = 0; j < 4; j++) {
                         let column = [board[0][j], board[1][j], board[2][j], board[3][j]].filter(val => val !== 0);
@@ -289,7 +289,6 @@
                     }
                 }
                 
-                // Вниз
                 if (direction === 'down') {
                     for (let j = 0; j < 4; j++) {
                         let column = [board[0][j], board[1][j], board[2][j], board[3][j]].filter(val => val !== 0);
@@ -306,7 +305,6 @@
                     }
                 }
                 
-                // Проверка изменений
                 moved = JSON.stringify(oldBoard) !== JSON.stringify(board);
                 
                 if (moved) {
@@ -323,7 +321,7 @@
                 return moved;
             }
             
-            // Обработка клавиш
+            // Обработчики управления
             document.addEventListener('keydown', (e) => {
                 if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
                     e.preventDefault();
@@ -332,7 +330,6 @@
                 }
             });
             
-            // Обработка свайпов
             let touchStartX = 0;
             let touchStartY = 0;
             
@@ -350,13 +347,10 @@
                 const diffX = touchStartX - touchEndX;
                 const diffY = touchStartY - touchEndY;
                 
-                // Определение направления свайпа
                 if (Math.abs(diffX) > Math.abs(diffY)) {
-                    // Горизонтальный свайп
                     if (diffX > 50) moveTiles('left');
                     if (diffX < -50) moveTiles('right');
                 } else {
-                    // Вертикальный свайп
                     if (diffY > 50) moveTiles('up');
                     if (diffY < -50) moveTiles('down');
                 }
@@ -366,20 +360,26 @@
                 e.preventDefault();
             }, { passive: false });
             
-            // Кнопка рестарта
-            restartButton.addEventListener('click', initGame);
+            // Исправленный обработчик кнопки
+            restartButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                initGame();
+            });
             
             // Интеграция с Telegram WebApp
-            if (window.Telegram && window.Telegram.WebApp) {
+            if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
                 Telegram.WebApp.expand();
                 Telegram.WebApp.enableClosingConfirmation();
                 Telegram.WebApp.MainButton.hide();
                 Telegram.WebApp.BackButton.hide();
                 Telegram.WebApp.setHeaderColor('#faf8ef');
                 Telegram.WebApp.setBackgroundColor('#faf8ef');
+                
+                // Блокировка свайпа вниз в Telegram
+                Telegram.WebApp.disableScroll = true;
             }
             
-            // Начало игры
             initGame();
         });
     </script>
