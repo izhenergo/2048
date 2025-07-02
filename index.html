@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Игра 2028</title>
     <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
         body, html {
             margin: 0;
             padding: 0;
@@ -16,7 +20,7 @@
             -webkit-user-select: none;
             user-select: none;
             overscroll-behavior: none;
-            touch-action: none;
+            touch-action: manipulation;
         }
 
         #game-container {
@@ -26,14 +30,15 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            padding: 10px;
         }
 
         .header {
             width: 100%;
+            max-width: 400px;
             display: flex;
             justify-content: space-between;
-            padding: 10px;
-            box-sizing: border-box;
+            margin-bottom: 10px;
         }
 
         h1 {
@@ -49,17 +54,16 @@
             color: white;
             font-weight: bold;
             text-align: center;
+            min-width: 80px;
         }
 
         #game-board {
-            width: calc(100% - 20px);
+            width: 100%;
             max-width: 400px;
-            height: 400px;
+            aspect-ratio: 1/1;
             background: #bbada0;
             border-radius: 6px;
             padding: 10px;
-            box-sizing: border-box;
-            margin: 10px auto;
             position: relative;
         }
 
@@ -115,18 +119,18 @@
             font-weight: bold;
             color: #776e65;
             margin-bottom: 30px;
+            text-align: center;
         }
 
         .restart-button {
             background: #8f7a66;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 15px 25px;
             font-size: 18px;
             border-radius: 5px;
             cursor: pointer;
             z-index: 101;
-            position: relative;
         }
 
         .hidden {
@@ -134,21 +138,17 @@
         }
 
         @media (max-width: 500px) {
-            #game-board {
-                height: calc(100vw - 40px);
-                max-width: calc(100vw - 40px);
-            }
             .cell {
-                font-size: 25px;
+                font-size: 6vw;
             }
             .tile-128, .tile-256, .tile-512 {
-                font-size: 20px;
+                font-size: 5vw;
             }
             .tile-1024, .tile-2048 {
-                font-size: 16px;
+                font-size: 4vw;
             }
             .game-over-text {
-                font-size: 40px;
+                font-size: 10vw;
             }
         }
     </style>
@@ -177,11 +177,15 @@
             const scoreElement = document.getElementById('score');
             const gameOverElement = document.getElementById('game-over');
             const restartButton = document.getElementById('restart-button');
+            const gameBoard = document.getElementById('game-board');
             
             let board = [];
             let score = 0;
             let gameOver = false;
+            let touchStartX = 0;
+            let touchStartY = 0;
             
+            // Инициализация игры
             function initGame() {
                 board = Array(4).fill().map(() => Array(4).fill(0));
                 score = 0;
@@ -193,6 +197,7 @@
                 addRandomTile();
             }
             
+            // Отрисовка поля
             function renderBoard() {
                 grid.innerHTML = '';
                 for (let i = 0; i < 4; i++) {
@@ -208,6 +213,7 @@
                 }
             }
             
+            // Добавление случайной плитки
             function addRandomTile() {
                 const emptyCells = [];
                 for (let i = 0; i < 4; i++) {
@@ -221,9 +227,12 @@
                 if (emptyCells.length > 0) {
                     const {i, j} = emptyCells[Math.floor(Math.random() * emptyCells.length)];
                     board[i][j] = Math.random() < 0.9 ? 2 : 4;
+                    return true;
                 }
+                return false;
             }
             
+            // Проверка возможности хода
             function canMove() {
                 for (let i = 0; i < 4; i++) {
                     for (let j = 0; j < 4; j++) {
@@ -235,12 +244,14 @@
                 return false;
             }
             
+            // Движение плиток
             function moveTiles(direction) {
                 if (gameOver) return false;
                 
                 let moved = false;
                 const oldBoard = JSON.parse(JSON.stringify(board));
                 
+                // Логика движения
                 if (direction === 'left') {
                     for (let i = 0; i < 4; i++) {
                         let row = board[i].filter(val => val !== 0);
@@ -249,10 +260,12 @@
                                 row[j] *= 2;
                                 score += row[j];
                                 row[j + 1] = 0;
+                                moved = true;
                             }
                         }
                         row = row.filter(val => val !== 0);
                         while (row.length < 4) row.push(0);
+                        if (JSON.stringify(board[i]) !== JSON.stringify(row)) moved = true;
                         board[i] = row;
                     }
                 }
@@ -265,10 +278,12 @@
                                 row[j] *= 2;
                                 score += row[j];
                                 row[j - 1] = 0;
+                                moved = true;
                             }
                         }
                         row = row.filter(val => val !== 0);
                         while (row.length < 4) row.unshift(0);
+                        if (JSON.stringify(board[i]) !== JSON.stringify(row)) moved = true;
                         board[i] = row;
                     }
                 }
@@ -281,10 +296,13 @@
                                 column[i] *= 2;
                                 score += column[i];
                                 column[i + 1] = 0;
+                                moved = true;
                             }
                         }
                         column = column.filter(val => val !== 0);
                         while (column.length < 4) column.push(0);
+                        const oldColumn = [board[0][j], board[1][j], board[2][j], board[3][j]];
+                        if (JSON.stringify(oldColumn) !== JSON.stringify(column)) moved = true;
                         for (let i = 0; i < 4; i++) board[i][j] = column[i];
                     }
                 }
@@ -297,31 +315,33 @@
                                 column[i] *= 2;
                                 score += column[i];
                                 column[i - 1] = 0;
+                                moved = true;
                             }
                         }
                         column = column.filter(val => val !== 0);
                         while (column.length < 4) column.unshift(0);
+                        const oldColumn = [board[0][j], board[1][j], board[2][j], board[3][j]];
+                        if (JSON.stringify(oldColumn) !== JSON.stringify(column)) moved = true;
                         for (let i = 0; i < 4; i++) board[i][j] = column[i];
                     }
                 }
                 
-                moved = JSON.stringify(oldBoard) !== JSON.stringify(board);
-                
                 if (moved) {
-                    addRandomTile();
                     scoreElement.textContent = score;
+                    addRandomTile();
                     
                     if (!canMove()) {
                         gameOver = true;
                         gameOverElement.classList.remove('hidden');
                     }
+                    
+                    renderBoard();
                 }
                 
-                renderBoard();
                 return moved;
             }
             
-            // Обработчики управления
+            // Обработка клавиатуры
             document.addEventListener('keydown', (e) => {
                 if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
                     e.preventDefault();
@@ -330,38 +350,42 @@
                 }
             });
             
-            let touchStartX = 0;
-            let touchStartY = 0;
-            
-            document.addEventListener('touchstart', (e) => {
+            // Обработка свайпов
+            gameBoard.addEventListener('touchstart', (e) => {
+                e.preventDefault();
                 touchStartX = e.touches[0].clientX;
                 touchStartY = e.touches[0].clientY;
             }, { passive: false });
             
-            document.addEventListener('touchmove', (e) => {
+            gameBoard.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+            }, { passive: false });
+            
+            gameBoard.addEventListener('touchend', (e) => {
                 if (!touchStartX || !touchStartY) return;
                 
-                const touchEndX = e.touches[0].clientX;
-                const touchEndY = e.touches[0].clientY;
+                const touchEndX = e.changedTouches[0].clientX;
+                const touchEndY = e.changedTouches[0].clientY;
                 
                 const diffX = touchStartX - touchEndX;
                 const diffY = touchStartY - touchEndY;
                 
                 if (Math.abs(diffX) > Math.abs(diffY)) {
+                    // Горизонтальный свайп
                     if (diffX > 50) moveTiles('left');
-                    if (diffX < -50) moveTiles('right');
+                    else if (diffX < -50) moveTiles('right');
                 } else {
+                    // Вертикальный свайп
                     if (diffY > 50) moveTiles('up');
-                    if (diffY < -50) moveTiles('down');
+                    else if (diffY < -50) moveTiles('down');
                 }
                 
                 touchStartX = 0;
                 touchStartY = 0;
-                e.preventDefault();
             }, { passive: false });
             
-            // Исправленный обработчик кнопки
-            restartButton.addEventListener('click', function(e) {
+            // Обработка кнопки "Новая игра"
+            restartButton.addEventListener('click', (e) => {
                 e.stopPropagation();
                 e.preventDefault();
                 initGame();
@@ -375,11 +399,10 @@
                 Telegram.WebApp.BackButton.hide();
                 Telegram.WebApp.setHeaderColor('#faf8ef');
                 Telegram.WebApp.setBackgroundColor('#faf8ef');
-                
-                // Блокировка свайпа вниз в Telegram
                 Telegram.WebApp.disableScroll = true;
             }
             
+            // Начало игры
             initGame();
         });
     </script>
