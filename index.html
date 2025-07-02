@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Игра 2028</title>
+    <title>Игра 2048</title>
     <style>
         body, html {
             margin: 0;
@@ -16,6 +16,7 @@
             user-select: none;
             overscroll-behavior: none;
             touch-action: none;
+            background-color: #faf8ef;
         }
         #game-wrapper {
             position: fixed;
@@ -47,6 +48,7 @@
             width: 100%;
             border: none;
             overflow: hidden;
+            background-color: #faf8ef;
         }
     </style>
 </head>
@@ -56,10 +58,13 @@
             <button class="nav-button" id="back-button">Назад</button>
             <button class="nav-button" id="close-button">Закрыть</button>
         </div>
-        <iframe id="game-frame" src="https://gabrielecirulli.github.io/2048/" allowfullscreen></iframe>
+        <iframe id="game-frame" src="https://gabrielecirulli.github.io/2048/" allowfullscreen sandbox="allow-same-origin allow-scripts allow-popups allow-forms"></iframe>
     </div>
 
     <script>
+        // Проверяем, открыто ли в Telegram WebApp
+        const isTelegramWebApp = typeof Telegram !== 'undefined' && Telegram.WebApp;
+        
         // Блокировка свайпа вниз
         let startY;
         document.addEventListener('touchstart', (e) => {
@@ -75,36 +80,48 @@
 
         // Обработка кнопок
         document.getElementById('back-button').addEventListener('click', () => {
-            if (window.Telegram && Telegram.WebApp) {
-                Telegram.WebApp.BackButton.onClick();
+            if (isTelegramWebApp) {
+                Telegram.WebApp.close();
             } else {
                 window.history.back();
             }
         });
 
         document.getElementById('close-button').addEventListener('click', () => {
-            if (window.Telegram && Telegram.WebApp) {
+            if (isTelegramWebApp) {
                 Telegram.WebApp.close();
+            } else {
+                window.close();
             }
         });
 
         // Интеграция с Telegram WebApp
-        if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+        if (isTelegramWebApp) {
             Telegram.WebApp.expand();
             Telegram.WebApp.enableClosingConfirmation();
             Telegram.WebApp.MainButton.hide();
             Telegram.WebApp.BackButton.show();
             Telegram.WebApp.BackButton.onClick(() => {
-                // Логика возврата
+                Telegram.WebApp.close();
             });
             Telegram.WebApp.setHeaderColor('#faf8ef');
             Telegram.WebApp.setBackgroundColor('#faf8ef');
-            Telegram.WebApp.disableScroll = true;
             
-            // Скрываем стандартный header Telegram
-            const header = document.getElementById('game-header');
-            header.style.display = 'none';
+            // Скрываем стандартные кнопки, если в Telegram
+            document.getElementById('game-header').style.display = 'none';
         }
+
+        // Фокус на iframe для работы клавиатуры
+        window.addEventListener('load', () => {
+            const frame = document.getElementById('game-frame');
+            frame.addEventListener('load', () => {
+                try {
+                    frame.contentWindow.focus();
+                } catch (e) {
+                    console.log('Cannot focus iframe due to cross-origin policy');
+                }
+            });
+        });
     </script>
 </body>
 </html>
