@@ -14,66 +14,47 @@
         body {
             background: #000;
             height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header-placeholder {
+            height: 50px; /* Высота заголовка Telegram */
+            flex-shrink: 0;
+        }
+        
+        .game-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             overflow: hidden;
         }
         
         iframe {
             width: 100%;
             height: 100%;
+            max-height: 80vh; /* Ограничиваем высоту игры */
             border: none;
-        }
-        
-        /* Скрываем верхний бар Telegram */
-        .tg-head {
-            display: none !important;
-        }
-        
-        /* Кнопка закрытия (если нужна) */
-        .close-btn {
-            position: fixed;
-            top: 12px;
-            left: 12px;
-            background: rgba(0, 0, 0, 0.5);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            font-size: 18px;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
     </style>
 </head>
 <body>
-    <!-- Кнопка закрытия (опционально) -->
-    <button class="close-btn" onclick="handleClose()">×</button>
+    <div class="header-placeholder"></div>
     
-    <iframe 
-        src="https://ellisonleao.github.io/clumsy-bird/" 
-        frameborder="0" 
-        allow="autoplay; fullscreen"
-    ></iframe>
+    <div class="game-container">
+        <iframe 
+            src="https://ellisonleao.github.io/clumsy-bird/" 
+            frameborder="0" 
+            allow="autoplay; fullscreen"
+        ></iframe>
+    </div>
 
     <script>
-        // Отключаем свайп вниз и растягиваем на весь экран
         if (window.Telegram && window.Telegram.WebApp) {
-            Telegram.WebApp.expand(); // Полноэкранный режим
-            Telegram.WebApp.disableClosingConfirmation(); // Отключаем подтверждение закрытия
-            Telegram.WebApp.BackButton.hide(); // Скрываем кнопку "Назад" (если есть)
-            
-            // Блокируем свайп вниз
-            Telegram.WebApp.enableClosingConfirmation(); // Даёт эффект "нельзя закрыть"
-            Telegram.WebApp.MainButton.hide(); // Скрываем основную кнопку (если не нужна)
-        }
-        
-        // Закрытие по кнопке (если добавлена)
-        function handleClose() {
-            if (window.Telegram && window.Telegram.WebApp) {
-                Telegram.WebApp.close();
-            }
+            Telegram.WebApp.expand();
+            Telegram.WebApp.disableClosingConfirmation();
+            Telegram.WebApp.BackButton.hide();
         }
     </script>
 </body>
