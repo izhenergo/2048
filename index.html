@@ -1,125 +1,131 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Clumsy Bird в Telegram</title>
+    <title>Clumsy Bird in Telegram</title>
     <style>
-        body, html {
+        * {
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #18222d;
+            color: #fff;
+            height: 100vh;
             overflow: hidden;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
-            background: #000;
-        }
-        #header {
-            padding: 10px;
             display: flex;
-            justify-content: space-between;
-            background: #2c3e50;
+            flex-direction: column;
         }
-        .btn {
-            background: #3498db;
-            color: white;
+        
+        .header {
+            padding: 12px 16px;
+            background: #1f2b38;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #2a3a4a;
+        }
+        
+        .header h1 {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        .back-button {
+            background: none;
             border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
+            color: #5ac8fa;
             font-size: 16px;
             cursor: pointer;
         }
-        #game-container {
-            position: fixed;
-            top: 60px;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border: none;
+        
+        .game-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
         }
+        
         iframe {
             width: 100%;
             height: 100%;
             border: none;
             background: #000;
         }
-        .telegram-hidden {
-            display: none !important;
+        
+        .loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #18222d;
+            z-index: 10;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: #5ac8fa;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div id="header">
-        <button class="btn" id="backBtn">Назад</button>
-        <button class="btn" id="closeBtn">Закрыть</button>
+    <div class="header">
+        <button class="back-button" onclick="handleBack()">← Back</button>
+        <h1>Clumsy Bird</h1>
+        <div style="width: 48px;"></div> <!-- Для баланса -->
     </div>
-    <div id="game-container">
-        <iframe src="https://ellisonleao.github.io/clumsy-bird/" allowfullscreen></iframe>
+    
+    <div class="game-container">
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+        </div>
+        <iframe 
+            src="https://ellisonleao.github.io/clumsy-bird/" 
+            frameborder="0" 
+            allow="autoplay; fullscreen" 
+            onload="hideLoading()"
+            id="game-iframe"
+        ></iframe>
     </div>
 
     <script>
-        // Проверяем, открыто ли в Telegram WebApp
-        const isTelegram = window.Telegram && Telegram.WebApp;
-        
-        // Настройки для Telegram
-        if (isTelegram) {
-            Telegram.WebApp.expand();
-            Telegram.WebApp.enableClosingConfirmation();
-            Telegram.WebApp.MainButton.hide();
-            
-            // Скрываем наши кнопки, используем Telegram кнопки
-            document.getElementById('header').classList.add('telegram-hidden');
-            
-            // Показываем кнопку назад в Telegram
-            Telegram.WebApp.BackButton.show();
-            Telegram.WebApp.BackButton.onClick(() => {
-                Telegram.WebApp.close();
-            });
+        // Скрываем лоадер после загрузки игры
+        function hideLoading() {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'none';
         }
-
-        // Обработчики кнопок
-        document.getElementById('backBtn').addEventListener('click', () => {
-            if (isTelegram) {
-                Telegram.WebApp.close();
+        
+        // Обработка кнопки "Назад" (можно настроить Telegram-бот для закрытия вебвью)
+        function handleBack() {
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.close();
             } else {
-                window.history.back();
+                // Альтернатива, если запущено не в Telegram
+                window.location.href = "https://t.me/BaronMakaron18_bot";
             }
-        });
-
-        document.getElementById('closeBtn').addEventListener('click', () => {
-            if (isTelegram) {
-                Telegram.WebApp.close();
-            } else {
-                window.close();
-            }
-        });
-
-        // Блокируем свайп вниз для обновления страницы
-        let startY;
-        document.addEventListener('touchstart', (e) => {
-            startY = e.touches[0].clientY;
-        }, { passive: true });
-
-        document.addEventListener('touchmove', (e) => {
-            const y = e.touches[0].clientY;
-            if (y - startY > 50 && startY < 50) {
-                e.preventDefault();
-            }
-        }, { passive: false });
-
-        // Фокус на игру после загрузки
-        window.addEventListener('load', () => {
-            const iframe = document.querySelector('iframe');
-            iframe.addEventListener('load', () => {
-                try {
-                    iframe.contentWindow.focus();
-                } catch (e) {
-                    console.log('Cannot focus iframe due to cross-origin policy');
-                }
-            });
-        });
+        }
+        
+        // Оптимизация для Telegram WebApp
+        if (window.Telegram && window.Telegram.WebApp) {
+            document.body.style.backgroundColor = 'var(--tg-theme-bg-color)';
+            document.querySelector('.header').style.backgroundColor = 'var(--tg-theme-secondary-bg-color)';
+            document.querySelector('.header h1').style.color = 'var(--tg-theme-text-color)';
+        }
     </script>
 </body>
 </html>
