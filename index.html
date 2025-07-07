@@ -33,12 +33,7 @@
             border: none;
             color: #5ac8fa;
             font-size: 16px;
-            margin-right: 12px;
             padding: 4px;
-        }
-        
-        .title {
-            font-size: 18px;
             font-weight: 500;
         }
         
@@ -57,14 +52,12 @@
             max-height: 80vh;
             border: none;
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <button class="back-button" onclick="handleBack()">←</button>
-        <div class="title">Clumsy Bird</div>
+        <button class="back-button" onclick="handleBack()">Назад</button>
     </div>
     
     <div class="game-container">
@@ -88,10 +81,12 @@
             Telegram.WebApp.expand();
             Telegram.WebApp.disableClosingConfirmation();
             
-            // Стили для Telegram
+            // Используем нативные стили Telegram
             document.querySelector('.header').style.backgroundColor = 'var(--tg-theme-secondary-bg-color)';
-            document.querySelector('.header').style.color = 'var(--tg-theme-text-color)';
             document.querySelector('.back-button').style.color = 'var(--tg-theme-link-color)';
+            
+            // Скрываем стандартную кнопку закрытия
+            Telegram.WebApp.BackButton.hide();
         }
     </script>
 </body>
