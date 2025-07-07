@@ -14,15 +14,6 @@
         body {
             background: #000;
             height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .game-container {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             overflow: hidden;
         }
         
@@ -31,38 +22,32 @@
             height: 100%;
             border: none;
         }
-        
-        /* Скрываем верхний бар Telegram */
-        .tg-head {
-            display: none !important;
-        }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <iframe 
-            src="https://ellisonleao.github.io/clumsy-bird/" 
-            frameborder="0" 
-            allow="autoplay; fullscreen"
-        ></iframe>
-    </div>
+    <iframe 
+        src="https://ellisonleao.github.io/clumsy-bird/" 
+        frameborder="0" 
+        allow="autoplay; fullscreen"
+    ></iframe>
 
     <script>
         if (window.Telegram && window.Telegram.WebApp) {
             Telegram.WebApp.expand();
             
-            // Настраиваем кнопку "Назад"
-            Telegram.WebApp.BackButton.show();
-            Telegram.WebApp.BackButton.setText("Назад");
-            
-            // Обработчик для возврата в бота
-            Telegram.WebApp.BackButton.onClick(function() {
-                // Перенаправляем в бота на список игр
-                window.location.href = "https://t.me/BaronMakaron18_bot?start=game_list";
-            });
-            
-            // Отключаем свайп для закрытия
+            // Полностью отключаем возможность закрытия
             Telegram.WebApp.disableClosingConfirmation();
+            
+            // Возвращаем стандартную кнопку закрытия
+            Telegram.WebApp.BackButton.hide();
+            Telegram.WebApp.MainButton.hide();
+            
+            // Блокируем все способы закрытия, кроме кнопки в заголовке
+            document.addEventListener('touchmove', function(e) {
+                if (e.touches.length && e.touches[0].clientY < 10) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
         }
     </script>
 </body>
