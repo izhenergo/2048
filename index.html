@@ -16,11 +16,30 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
         }
         
-        .header-placeholder {
-            height: 50px; /* Высота заголовка Telegram */
-            flex-shrink: 0;
+        .header {
+            padding: 12px 16px;
+            background: #1f2b38;
+            display: flex;
+            align-items: center;
+            color: white;
+            border-bottom: 1px solid #2a3a4a;
+        }
+        
+        .back-button {
+            background: none;
+            border: none;
+            color: #5ac8fa;
+            font-size: 16px;
+            margin-right: 12px;
+            padding: 4px;
+        }
+        
+        .title {
+            font-size: 18px;
+            font-weight: 500;
         }
         
         .game-container {
@@ -29,18 +48,24 @@
             justify-content: center;
             align-items: center;
             overflow: hidden;
+            padding: 10px;
         }
         
         iframe {
             width: 100%;
             height: 100%;
-            max-height: 160vh; /* Ограничиваем высоту игры */
+            max-height: 80vh;
             border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
     </style>
 </head>
 <body>
-    <div class="header-placeholder"></div>
+    <div class="header">
+        <button class="back-button" onclick="handleBack()">←</button>
+        <div class="title">Clumsy Bird</div>
+    </div>
     
     <div class="game-container">
         <iframe 
@@ -51,10 +76,22 @@
     </div>
 
     <script>
+        function handleBack() {
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.close();
+            } else {
+                window.history.back();
+            }
+        }
+        
         if (window.Telegram && window.Telegram.WebApp) {
             Telegram.WebApp.expand();
             Telegram.WebApp.disableClosingConfirmation();
-            Telegram.WebApp.BackButton.hide();
+            
+            // Стили для Telegram
+            document.querySelector('.header').style.backgroundColor = 'var(--tg-theme-secondary-bg-color)';
+            document.querySelector('.header').style.color = 'var(--tg-theme-text-color)';
+            document.querySelector('.back-button').style.color = 'var(--tg-theme-link-color)';
         }
     </script>
 </body>
