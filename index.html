@@ -16,25 +16,6 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-        
-        .header {
-            padding: 12px 16px;
-            background: #1f2b38;
-            display: flex;
-            align-items: center;
-            color: white;
-            border-bottom: 1px solid #2a3a4a;
-        }
-        
-        .back-button {
-            background: none;
-            border: none;
-            color: #5ac8fa;
-            font-size: 16px;
-            padding: 4px;
-            font-weight: 500;
         }
         
         .game-container {
@@ -43,23 +24,21 @@
             justify-content: center;
             align-items: center;
             overflow: hidden;
-            padding: 10px;
         }
         
         iframe {
             width: 100%;
             height: 100%;
-            max-height: 80vh;
             border: none;
-            border-radius: 12px;
+        }
+        
+        /* Скрываем верхний бар Telegram */
+        .tg-head {
+            display: none !important;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <button class="back-button" onclick="handleBack()">Назад</button>
-    </div>
-    
     <div class="game-container">
         <iframe 
             src="https://ellisonleao.github.io/clumsy-bird/" 
@@ -69,24 +48,21 @@
     </div>
 
     <script>
-        function handleBack() {
-            if (window.Telegram && window.Telegram.WebApp) {
-                Telegram.WebApp.close();
-            } else {
-                window.history.back();
-            }
-        }
-        
         if (window.Telegram && window.Telegram.WebApp) {
             Telegram.WebApp.expand();
+            
+            // Настраиваем кнопку "Назад"
+            Telegram.WebApp.BackButton.show();
+            Telegram.WebApp.BackButton.setText("Назад");
+            
+            // Обработчик для возврата в бота
+            Telegram.WebApp.BackButton.onClick(function() {
+                // Перенаправляем в бота на список игр
+                window.location.href = "https://t.me/BaronMakaron18_bot?start=game_list";
+            });
+            
+            // Отключаем свайп для закрытия
             Telegram.WebApp.disableClosingConfirmation();
-            
-            // Используем нативные стили Telegram
-            document.querySelector('.header').style.backgroundColor = 'var(--tg-theme-secondary-bg-color)';
-            document.querySelector('.back-button').style.color = 'var(--tg-theme-link-color)';
-            
-            // Скрываем стандартную кнопку закрытия
-            Telegram.WebApp.BackButton.hide();
         }
     </script>
 </body>
